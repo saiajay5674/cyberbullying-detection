@@ -1,12 +1,48 @@
 import requests
+import json
+import pandas as pd
+import datetime
+import time
 
+df = pd.read_csv('data.csv', names= ['tweet_id', 'user_id', 'label', '1', '2', '3', '4', '5'])
 
+#remove unwanted columns
+for i in range(1, 6):
+    df.drop([str(i)], axis=1,inplace=True)
+    
 search_headers = {
     'Authorization': 'Bearer AAAAAAAAAAAAAAAAAAAAALxKKQEAAAAA%2BpAZV6uMysIeuOhTwt7XEduJeZ4%3DB5i4IC7YL2I8fo5gDZnPOJKLVWy8Ca25bMjcrdPA3LiLhSCiOu'
 }
+    
+search_url = 'https://api.twitter.com/1.1/statuses/show.json?id='
 
-search_url = 'https://api.twitter.com/1.1/statuses/show.json?id=210462857140252672'
+count = 0 
 
-search_resp = requests.get(search_url, headers=search_headers)
+tweets = []
+labels = []
 
-print(search_resp.json())
+for index, row in df.iterrows():
+    
+    
+    print('id', df.loc[index, 'tweet_id'])
+    search_resp = requests.get(search_url+str(df.loc[index, 'tweet_id']), headers=search_headers)
+    
+    time.sleep(1)
+    
+    tweet = search_resp.json()
+    
+    if 'text' not in tweet:
+        continue
+    else:
+        tweets.append(tweet['text'])
+        labels.append(1) if df.loc[index, 'label'] == 'y' else labels.append(0)
+        
+    print(tweets, labels)
+    
+    print()
+    print()
+    
+
+final_df =  pd.DataFrame({'Tweet': tweets, 'Label': labels}, columns=['Tweet', 'Label'])
+
+final_df.to_csv('labelled_tweets.csv', index=False)
