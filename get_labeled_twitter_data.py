@@ -24,23 +24,19 @@ labels = []
 for index, row in df.iterrows():
     
     
-    print('id', df.loc[index, 'tweet_id'])
     search_resp = requests.get(search_url+str(df.loc[index, 'tweet_id']), headers=search_headers)
     
     time.sleep(1)
     
     tweet = search_resp.json()
     
+    count += 1
+    print(datetime.datetime.now(), count)
     if 'text' not in tweet:
         continue
     else:
         tweets.append(tweet['text'])
         labels.append(1) if df.loc[index, 'label'] == 'y' else labels.append(0)
-        
-    print(tweets, labels)
-    
-    print()
-    print()
     
 
 final_df =  pd.DataFrame({'Tweet': tweets, 'Label': labels}, columns=['Tweet', 'Label'])
